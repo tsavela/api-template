@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {template-KubernetesServiceName}
+    kube-monkey/enabled: enabled
+    kube-monkey/identifier: {template-KubernetesServiceName}
+    kube-monkey/mtbf: '1'
+    kube-monkey/kill-mode: "fixed"
+    kube-monkey/kill-value: '1'
+  name: {template-KubernetesServiceName}
+  annotations:
+    kubernetes.io/change-cause: "Deployed commit id: ${COMMIT}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {template-KubernetesServiceName}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {template-KubernetesServiceName}
+        kube-monkey/enabled: enabled
+        kube-monkey/identifier: {template-KubernetesServiceName}
+        kube-monkey/mtbf: '1'
+        kube-monkey/kill-mode: "fixed"
+        kube-monkey/kill-value: '1'
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 2000
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - {template-KubernetesServiceName}
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: {template-KubernetesServiceName}
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: 150Mi
+            limits:
+              memory: 2000Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3 # 30 + 10 * 3 = 60 seconds allowed startup time
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          image: dsparegistry.azurecr.io/dspa/{template-KubernetesServiceName}:LATEST
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_CONNECTION_STRING
+              value: "User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database={template-KubernetesServiceName};"
+            - name: API_PATH_PREFIX
+              value: ""
+            - name: AZURE_AD_AUTHORITY
+              value: ""
+            - name: AZURE_AD_CLIENT_ID
+              value: ""
+            - name: LOG_LEVEL
+              value: "Debug"
+            - name: SERVICE_NAME
+              value: "{template-ServiceName}"
+            - name: API_NAME
+              value: "{template-ServiceName} API"
+
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: regcred
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {template-KubernetesServiceName}
+spec:
+  ports:
+    - port: {template-ServicePort}
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: {template-KubernetesServiceName}
+  type: LoadBalancer

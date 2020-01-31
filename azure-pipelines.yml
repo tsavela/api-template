@@ -1,0 +1,46 @@
+name: $(Build.SourceBranchName)-$(Build.SourceVersion)
+
+trigger:
+  - master
+
+variables:
+  SERVICENAME: {template-KubernetesServiceName}
+  COMMIT: $(Build.SourceVersion)
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: Build
+        displayName: Build
+        steps:
+          - task: Docker@2
+            displayName: Build Image
+            inputs:
+              containerRegistry: 'Docker registry'
+              repository: 'dspa/$(SERVICENAME)'
+              command: build
+              tags: |
+                $(Build.SourceVersion)
+                $(Build.SourceBranchName)
+                latest
+              arguments: '--pull --shm-size 256m --memory=3g --memory-swap=-1'
+
+          - task: Docker@2
+            displayName: Push Image
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+            inputs:
+              containerRegistry: 'Docker registry'
+              repository: 'dspa/$(SERVICENAME)'
+              command: 'push'
+              tags: |
+                $(Build.SourceVersion)
+                $(Build.SourceBranchName)
+                latest
+
+          - task: PublishPipelineArtifact@0
+            condition: ne(variables['Build.Reason'], 'PullRequest')
+            displayName: 'Publish deployment_files as pipeline artifact'
+            inputs:
+              artifactName: 'deployment_files'
+              targetPath: 'deployment_files'

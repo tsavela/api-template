@@ -1,0 +1,1 @@
+﻿{"type":null,"title":"Unhandled application error","status":500,"detail":"Internal server error","instance":"/api/v1/exceptions/exception","extensions":{}}

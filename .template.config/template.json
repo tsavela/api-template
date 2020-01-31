@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Tommy Savela",
+    "classifications": [
+        "Web/ASP.NET"
+    ],
+    "identity": "Hexagonal.AspNetCore.Api",
+    "name": ".NET Core API",
+    "shortName": "hexagonal-api",
+    "description": "ASP.NET Core API following ports and adapters design pattern, including tests and API setup (Swagger, Auth, versioning...).",
+    "tags": {
+        "language": "C#"
+    },
+    "preferNameDirectory": true,
+    "sourceName": "ApiTemplate",
+    "sources": [
+        {
+            "modifiers": [
+                {
+                    "exclude": [
+                        "README.md",
+                        ".vs/**",
+                        ".git/**",
+                        "**/bin/**",
+                        "**/obj/**"
+                    ]
+                }
+            ]
+        }
+    ],
+    "symbols": {
+        "servicePort": {
+            "description": "Port that the API will listen on when running locally",
+            "type": "parameter",
+            "datatype": "int",
+            "replaces": "{template-ServicePort}",
+            "isRequired": true
+        },
+        "serviceName": {
+            "description": "Human-friendly name of the service",
+            "type": "parameter",
+            "datatype": "text",
+            "replaces": "{template-ServiceName}",
+            "isRequired": true
+        },
+        "kubernetesServiceName": {
+            "description": "Name of the Kubernetes service",
+            "type": "parameter",
+            "datatype": "text",
+            "replaces": "{template-KubernetesServiceName}",
+            "isRequired": true
+        }
+    }
+}

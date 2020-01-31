@@ -1,0 +1,19 @@
+﻿{
+  "forecasts": [
+    {
+      "daysFromNow": 1,
+      "temperatureC": 5,
+      "summary": "Freezing"
+    },
+    {
+      "daysFromNow": 2,
+      "temperatureC": 10,
+      "summary": "Bracing"
+    },
+    {
+      "daysFromNow": 3,
+      "temperatureC": 15,
+      "summary": "Chilly"
+    }
+  ]
+}

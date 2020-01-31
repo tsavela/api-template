@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {template-KubernetesServiceName}-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: ${HOSTNAME}
+      http:
+        paths:
+          - path: /{template-KubernetesServiceName}(/|$)(.*)
+            backend:
+              serviceName: {template-KubernetesServiceName}
+              servicePort: 80
